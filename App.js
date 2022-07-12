@@ -1,3 +1,4 @@
+/* eslint-disable react-native/no-inline-styles */
 /**
  * Sample React Native App
  * https://github.com/facebook/react-native
@@ -18,13 +19,71 @@ import {
   Alert,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import axios from 'axios';
 
 const COLORS = {primary: '#1f145c', white: '#fff'};
+
 const App = () => {
   const [todos, setTodos] = React.useState([]);
   const [textInput, setTextInput] = React.useState('');
+  React.useEffect(() => {
+    callApi();
+  }, []);
+
+  const callApi = () => {
+    axios
+      .get('https://62bebee3be8ba3a10d5a8e4b.mockapi.io/todo')
+      .then(function (response) {
+        // handle success
+        setTodos(response.data);
+        console.log('Check:' + response.data);
+      })
+      .catch(function (error) {
+        // handle error
+        console.log(error);
+      })
+      .then(function () {
+        // always executed
+      });
+  };
+
+  const addApi = data => {
+    axios
+      .post('https://62bebee3be8ba3a10d5a8e4b.mockapi.io/todo', data)
+      .then(function (response) {
+        // handle success
+        console.log('ADDCheck:' + response.data);
+        setTodos([...todos, response.data]);
+        setTextInput('');
+      })
+      .catch(function (error) {
+        // handle error
+        console.log(error);
+      })
+      .then(function () {
+        // always executed
+      });
+  };
+  const deleteApi = data => {
+    axios
+      .delete(`https://62bebee3be8ba3a10d5a8e4b.mockapi.io/todo/${data}`)
+      .then(function (response) {
+        // handle success
+        console.log('DelCheck:' + response.data);
+        const newTodosItem = todos.filter(item => item.id !== data);
+        setTodos(newTodosItem);
+      })
+      .catch(function (error) {
+        // handle error
+        console.log(error);
+      })
+      .then(function () {
+        // always executed
+      });
+  };
+
   const addTodo = () => {
-    if (textInput == '') {
+    if (textInput === '') {
       Alert.alert('Error', 'Please input todo');
     } else {
       const newTodo = {
@@ -32,13 +91,14 @@ const App = () => {
         task: textInput,
         completed: false,
       };
-      setTodos([...todos, newTodo]);
-      setTextInput('');
+      //setTodos([...todos, newTodo]);
+      //setTextInput('');
+      addApi(newTodo);
     }
   };
   const markTodoComplete = todoId => {
     const newTodosItem = todos.map(item => {
-      if (item.id == todoId) {
+      if (item.id === todoId) {
         return {...item, completed: true};
       }
       return item;
@@ -46,8 +106,9 @@ const App = () => {
     setTodos(newTodosItem);
   };
   const deleteTodo = todoId => {
-    const newTodosItem = todos.filter(item => item.id != todoId);
-    setTodos(newTodosItem);
+    deleteApi(todoId);
+    //const newTodosItem = todos.filter(item => item.id !== todoId);
+    //setTodos(newTodosItem);
   };
   const clearAllTodos = () => {
     Alert.alert('Confirm', 'Clear todos?', [
